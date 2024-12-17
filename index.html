@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biểu Đồ Tô Màu Vùng</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            overflow-x: auto; /* Kích hoạt thanh cuộn ngang */
+        }
+
+        canvas {
+            min-width: 3000px; /* Tăng chiều rộng để cuộn nhiều hơn */
+            height: 800px;     /* Chiều cao gấp đôi */
+        }
+    </style>
+</head>
+<body>
+    <h2>Biểu Đồ Tô Màu Vùng - Dưới 20 và Trên Đường Trắng</h2>
+    <div class="chart-container">
+        <canvas id="lineChart"></canvas>
+    </div>
+
+    <script>
+        const scriptURL = "https://script.google.com/macros/s/AKfycbz4ndwU8Z5ELbXt6wXy0dz8_iNVk4Z-5itcdCxHufzq61wzWKLZNebTK_rTbAczMExX/exec";
+
+        async function fetchDataAndRenderChart() {
+            try {
+                const response = await fetch(scriptURL);
+                const data = await response.json();
+
+                // Trích xuất dữ liệu từ JSON
+                let labels = data.map(item => {
+                    const date = new Date(item.date); // Chuyển đổi chuỗi ngày thành Date object
+                    const day = String(date.getDate()).padStart(2, "0");
+                    const month = String(date.getMonth() + 1).padStart(2, "0"); // Tháng (0-11) + 1
+                    const year = String(date.getFullYear()).slice(-2); // Lấy 2 chữ số cuối của năm
+                    return `${day}/${month}/${year}`; // Định dạng dd/mm/yy
+                });
+
+                let duongXanhValues = data.map(item => item.duongXanh); // Giá trị đường xanh
+                let duongTrangValues = data.map(item => item.duongTrang); // Giá trị đường trắng
+
+                // Đảo ngược thứ tự dữ liệu
+                labels.reverse();
+                duongXanhValues.reverse();
+                duongTrangValues.reverse();
+
+                // Tính vùng tô màu: dưới 20 và trên đường trắng
+                const fillData = duongXanhValues.map((value, index) => {
+                    return (value < 20 && value > duongTrangValues[index]) ? value : null;
+                });
+
+                const ctx = document.getElementById("lineChart").getContext("2d");
+                new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: labels, // Ngày định dạng dd/mm/yy (đã đảo ngược)
+                        datasets: [
+                            {
+                                label: "Đường Xanh",
+                                data: duongXanhValues,
+                                borderColor: "blue",
+                                backgroundColor: "transparent",
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                fill: false
+                            },
+                            {
+                                label: "Đường Trắng",
+                                data: duongTrangValues,
+                                borderColor: "purple",
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                fill: false
+                            },
+                            {
+                                label: "Đường Ngang 20",
+                                data: Array(labels.length).fill(20),
+                                borderColor: "green",
+                                borderDash: [5, 5], // Đường nét đứt
+                                borderWidth: 2,
+                                pointRadius: 0, // Không có điểm
+                                fill: false
+                            },
+                            {
+                                label: "Đường Ngang 60",
+                                data: Array(labels.length).fill(60),
+                                borderColor: "red",
+                                borderDash: [5, 5], // Đường nét đứt
+                                borderWidth: 2,
+                                pointRadius: 0, // Không có điểm
+                                fill: false
+                            },
+                            {
+                                label: "Vùng tô màu",
+                                data: fillData,
+                                borderColor: "transparent",
+                                backgroundColor: "rgba(0, 255, 255, 0.3)", // Màu xanh nhạt
+                                borderWidth: 0,
+                                pointRadius: 0,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: "top"
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: "Ngày (dd/mm/yy)"
+                                },
+                                ticks: {
+                                    autoSkip: false, // Hiển thị tất cả các tick
+                                    callback: function(value, index, ticks) {
+                                        return labels[index]; // Hiển thị ngày tháng năm
+                                    }
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: "Giá Trị"
+                                },
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 10 // Bước tăng giá trị trục Y
+                                }
+                            }
+                        }
+                    }
+                });
+
+            } catch (error) {
+                console.error("Lỗi khi lấy dữ liệu:", error);
+            }
+        }
+
+        // Gọi hàm để fetch dữ liệu và render biểu đồ
+        fetchDataAndRenderChart();
+    </script>
+</body>
+</html>

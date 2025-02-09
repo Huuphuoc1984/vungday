@@ -26,22 +26,16 @@
             }
 
             img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover; /* Giúp ảnh vừa khớp với khung hình */
+                width: 70%; /* Giảm kích thước hình ảnh xuống 70% */
+                height: auto; /* Đảm bảo giữ tỷ lệ ảnh */
+                object-fit: contain; /* Giữ tỷ lệ ảnh mà không bị cắt bớt */
             }
 
             /* Tối ưu cho màn hình di động */
             @media (max-width: 768px) {
-                .image-container {
-                    height: auto; /* Tự động thay đổi chiều cao khi trên thiết bị di động */
-                    max-width: 100%;
-                }
-
                 img {
-                    width: 100%;
-                    height: auto; /* Giữ tỷ lệ ảnh trên màn hình nhỏ */
-                    object-fit: contain; /* Giữ nguyên tỷ lệ ảnh mà không bị cắt bớt */
+                    width: 70%; /* Giảm kích thước xuống 70% trên màn hình di động */
+                    height: auto; /* Giữ tỷ lệ ảnh */
                 }
             }
         </style>

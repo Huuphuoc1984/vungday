@@ -30,6 +30,20 @@
                 height: 100%;
                 object-fit: cover; /* Giúp ảnh vừa khớp với khung hình */
             }
+
+            /* Tối ưu cho màn hình di động */
+            @media (max-width: 768px) {
+                .image-container {
+                    height: auto; /* Tự động thay đổi chiều cao khi trên thiết bị di động */
+                    max-width: 100%;
+                }
+
+                img {
+                    width: 100%;
+                    height: auto; /* Giữ tỷ lệ ảnh trên màn hình nhỏ */
+                    object-fit: contain; /* Giữ nguyên tỷ lệ ảnh mà không bị cắt bớt */
+                }
+            }
         </style>
     </head>
     <body>
